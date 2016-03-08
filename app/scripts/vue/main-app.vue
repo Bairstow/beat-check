@@ -1,3 +1,4 @@
+// main-app.vue
 <template>
   <div class="nav">
     <div class="container">
@@ -12,14 +13,14 @@
 </template>
 
 <style>
-.nav {
-  background-color: #25161B;
-  min-height: 2rem;
-}
-.search {
-  background-color: #453953;
-  min-height: 10rem;
-}
+  .nav {
+    background-color: #25161B;
+    min-height: 2rem;
+  }
+  .search {
+    background-color: #453953;
+    min-height: 10rem;
+  }
 </style>
 
 <script>

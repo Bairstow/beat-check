@@ -44,8 +44,6 @@ var bundler = browserify({
   entries: [sourceFile],
   debug: true,
   insertGlobals: true,
-  cache: {},
-  packageCache: {},
   fullPaths: true
 });
 function rebundle() {
@@ -137,7 +135,8 @@ gulp.task('watch', ['orderedCompile'], function() {
   gulp.watch('app/scripts/**/*.json', ['json']);
   gulp.watch('app/*.html', ['html']);
   gulp.watch(['app/styles/**/*.scss'], ['styles']);
-  gulp.watch(['app/scripts/**/*.js', 'app/scripts/**/*.vue'], ['orderedCompile']);
+  gulp.watch(['app/scripts/**/*.vue'], ['orderedCompile']);
+  // gulp.watch(['app/scripts/**/*.js']), ['scripts']);
   gulp.watch('app/images/**/*', ['images']);
 });
 
@@ -161,4 +160,4 @@ gulp.task('build', ['html', 'bundle', 'images', 'fonts', 'extras'], function() {
 });
 
 // default task
-gulp.task('default', ['clean', 'build']);
+gulp.task('default', ['orderedCompile']);
