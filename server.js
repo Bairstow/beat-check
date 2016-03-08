@@ -10,8 +10,8 @@ var db = require('./model/db');
 
 // enable general logging
 app.use(morgan('combined'));
-// enable access to static files in public directory
-app.use(express.static('dist'));
+// enable access to static files in build directory
+app.use(express.static('build'));
 
 // push index calls to launch vue initialisation and SPA
 app.use('/', baseRouter);
