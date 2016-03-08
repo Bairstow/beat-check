@@ -1,47 +1,36 @@
 <template>
   <div class="nav">
     <div class="container">
-      <div class="row">
-        <div class="title">
-          {{ nav }}
-        </div>
-      </div>
+      <navbar></navbar>
     </div>
   </div>
   <div class="search">
     <div class="container">
-      <div class="row">
-        <div class="title">
-          {{ message }}
-        </div>
-      </div>
+      <searchblock></searchblock>
     </div>
   </div>
 </template>
 
 <style>
 .nav {
-  background-color: gray;
+  background-color: #25161B;
   min-height: 2rem;
 }
 .search {
-  background-color: linen;
-}
-.title {
-  text-align: center;
-  color: black;
+  background-color: #453953;
+  min-height: 10rem;
 }
 </style>
 
 <script>
 module.exports = {
   data: function() {
-    return {
-      nav: 'Nav Placeholder',
-      message: 'Node/Vue App scaffold'
-    }
+    return {}
   },
-  components: {},
+  components: {
+    navbar: require('./nav-bar.vue'),
+    searchblock: require('./search-block.vue')
+  },
   events: {},
   ready: function() {
     console.log('Vue Main app loaded.');
