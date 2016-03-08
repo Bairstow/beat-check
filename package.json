@@ -1,7 +1,7 @@
 {
-  "name": "full-vue-skeleton",
+  "name": "beat-check",
   "version": "0.0.1",
-  "description": "jb scaffold stack for node-backed vue.js app",
+  "description": "final wdi project, dynamic generation of artist profile/public interest",
   "main": "",
   "author": "jb",
   "license": "ISC",
