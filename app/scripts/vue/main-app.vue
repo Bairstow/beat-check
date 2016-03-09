@@ -40,7 +40,9 @@ var $ = require('jquery');
 
 module.exports = {
   data: function() {
-    return {}
+    return {
+      currentResult: {}
+    };
   },
   components: {
     navbar: require('./nav-bar.vue'),
@@ -48,10 +50,22 @@ module.exports = {
     resultblock: require('./result-block.vue')
   },
   events: {
-    'search-input': function(search) {
+    'search-input': function(searchInput) {
       $('.search').css('display', 'none');
       $('.result').css('height', '92vh');
-      this.$broadcast('search-input', search);
+      this.$broadcast('search-input', searchInput);
+      var vueContext = this;
+      $.ajax({
+        url: '/api/search',
+        context: vueContext,
+        data: {
+          search: searchInput
+        },
+        dataType: 'json'
+      }).done(function(result) {
+        console.log('Beat search results generated:', result);
+        vueContext.currentResult = result;
+      });
     },
     'result-cancel': function(data) {
       $('.search').css('display', 'block');
