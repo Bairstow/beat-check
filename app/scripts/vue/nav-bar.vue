@@ -1,7 +1,7 @@
 <template>
   <div class="row">
-    <div class="one-half column">Beat Check</div>
-    <div class="one-half column">Howdy, {{ user }}</div>
+    <div class="one-half column text-left">Beat Check</div>
+    <div class="one-half column text-right">Howdy, {{ user }}</div>
   </div>
 </template>
 
@@ -12,7 +12,7 @@
 module.exports = {
   data: function() {
     return {
-      user: 'JB'
+      user: 'Josh'
     }
   },
   components: {},

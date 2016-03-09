@@ -45,10 +45,10 @@ gulp.task('bundle-app', function() {
 
 // watch
 gulp.task('watch', ['bundle-app'], function() {
-  gulp.watch(['app/scripts/**/*.vue'], ['bundle-app']);
+  gulp.watch('app/scripts/**/*.vue', ['bundle-app']);
   // gulp.watch('app/scripts/**/*.vue', function(event) {
   //   console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');
-  //   runSequence('scripts');
+  //   gulp.start('bundle-app');
   // });
 });
 

@@ -1,4 +1,19 @@
 body {
-  color: #F3CBA5;
-  background-color: #975A5E;
+  color: black;
+  background-color: #FFE390;
+  font-family: 'Raleway', sans-serif;
+}
+
+.text-left {
+  text-align: left;
+}
+.text-right {
+  text-align: right;
+}
+.text-center {
+  text-align: center;
+}
+
+.text-slim {
+  font-weight: 200;
 }

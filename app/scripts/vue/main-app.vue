@@ -10,29 +10,55 @@
       <searchblock></searchblock>
     </div>
   </div>
+  <div class="result">
+    <div class="container">
+      <resultblock></resultblock>
+    </div>
+  </div>
 </template>
 
 <style>
   .nav {
-    background-color: #25161B;
-    min-height: 2rem;
+    background-color: #FF926B;
+    color: white;
+    height: 8vh;
+    line-height: 8vh;
   }
   .search {
-    background-color: #453953;
-    min-height: 10rem;
+    background-color: #FFE390;
+    height: 40vh;
+  }
+  .result {
+    background-color: #25161B;
+    color: white;
+    height: 52vh;
   }
 </style>
 
 <script>
+var $ = require('jquery');
+
 module.exports = {
   data: function() {
     return {}
   },
   components: {
     navbar: require('./nav-bar.vue'),
-    searchblock: require('./search-block.vue')
+    searchblock: require('./search-block.vue'),
+    resultblock: require('./result-block.vue')
   },
-  events: {},
+  events: {
+    'search-input': function(search) {
+      $('.search').css('display', 'none');
+      $('.result').css('height', '92vh');
+      this.$broadcast('search-input', search);
+    },
+    'result-cancel': function(data) {
+      $('.search').css('display', 'block');
+      $('.result').css('display', '52vh');
+      this.$broadcast('result-cancel', data);
+    }
+  },
   ready: function() {
     console.log('Vue Main app loaded.');
   }
