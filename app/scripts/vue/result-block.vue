@@ -4,6 +4,9 @@
       <h1>{{ artist }} <i class="icon ion-android-cancel" v-on:click="resultCancel"></i></h1>
     </div>
   </div>
+  <div  v-show="artist">
+    <resultdisplay :details="details"></resultdisplay>
+  </div>
 </template>
 
 <style>
@@ -21,7 +24,9 @@ module.exports = {
       return (this.artist !== '');
     }
   },
-  components: {},
+  components: {
+    resultdisplay: require('./result-display.vue')
+  },
   methods: {
     'resultCancel': function() {
       this.artist = '';
@@ -33,6 +38,7 @@ module.exports = {
       this.artist = search;
     }
   },
+  props: ['details'],
   ready: function() {
     console.log('Vue result-block loaded.');
   }

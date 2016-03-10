@@ -10,7 +10,7 @@ var apiRouter = require('./routers/apiRouter');
 var db = require('./model/db');
 
 // enable general logging
-app.use(morgan('combined'));
+// app.use(morgan('combined'));
 // enable access to static files in build directory
 app.use(express.static('build'));
 
@@ -20,5 +20,17 @@ app.use('/', baseRouter);
 app.use('/api', apiRouter);
 
 // kickoff express server
-app.listen(PORT);
+var server = require('http').createServer(app).listen(PORT);
 console.log('Server running on port: ' + PORT);
+
+// create a Socket.IO server and attach it to the http server
+var io = require('socket.io').listen(server);
+
+// bring in game logic for the server
+var game = require('./beat-game-server');
+
+// Listen for Socket.IO Connections. Once connected, start the game logic.
+io.sockets.on('connection', function(socket) {
+    console.log('client connected');
+    game.initGame(io, socket);
+});

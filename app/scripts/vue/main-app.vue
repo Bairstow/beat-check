@@ -12,7 +12,12 @@
   </div>
   <div class="result">
     <div class="container">
-      <resultblock></resultblock>
+      <resultblock :details="currentResult"></resultblock>
+    </div>
+  </div>
+  <div class="game">
+    <div class="container">
+      <gameblock></gameblock>
     </div>
   </div>
 </template>
@@ -23,6 +28,7 @@
     color: white;
     height: 8vh;
     line-height: 8vh;
+    font-size: 2rem;
   }
   .search {
     background-color: #FFE390;
@@ -47,12 +53,32 @@ module.exports = {
   components: {
     navbar: require('./nav-bar.vue'),
     searchblock: require('./search-block.vue'),
-    resultblock: require('./result-block.vue')
+    resultblock: require('./result-block.vue'),
+    gameblock: require('./game-block.vue')
+  },
+  methods: {
+    showHomeView: function() {
+      $('.search').css('display', 'block');
+      $('.result').css('display', 'block');
+      $('.result').css('height', '52vh');
+      $('.game').css('display', 'none');
+    },
+    showResultView: function() {
+      $('.search').css('display', 'none');
+      $('.result').css('display', 'block');
+      $('.result').css('height', '92vh');
+      $('.game').css('display', 'none');
+    },
+    showGameView: function() {
+      $('.search').css('display', 'none');
+      $('.result').css('display', 'none');
+      $('.game').css('display', 'block');
+      $('.game').css('height', '92vh');
+    }
   },
   events: {
     'search-input': function(searchInput) {
-      $('.search').css('display', 'none');
-      $('.result').css('height', '92vh');
+      this.showResultView();
       this.$broadcast('search-input', searchInput);
       var vueContext = this;
       $.ajax({
@@ -63,14 +89,19 @@ module.exports = {
         },
         dataType: 'json'
       }).done(function(result) {
-        console.log('Beat search results generated:', result);
         vueContext.currentResult = result;
       });
     },
     'result-cancel': function(data) {
-      $('.search').css('display', 'block');
-      $('.result').css('display', '52vh');
+      this.showHomeView();
       this.$broadcast('result-cancel', data);
+    },
+    'nav-home': function(data) {
+      this.showHomeView();
+      this.$broadcast('result-cancel', data);
+    },
+    'nav-game': function(data) {
+      this.showGameView();
     }
   },
   ready: function() {
