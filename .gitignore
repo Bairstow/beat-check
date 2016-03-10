@@ -2,3 +2,4 @@
 /build/
 /dist/
 .sass-cache/
+/lib/twitterToken.js
