@@ -8,7 +8,7 @@ module.exports = {
     gs.emit('connected', { message: "beat-game-server init call." });
     // host events
     gs.on('hostCreateNewGame', hostCreateNewGame);
-    gs.on('hostRoomFull', hostPrepareGame);
+    gs.on('hostPrepGame', hostPrepareGame);
     gs.on('countdownFinished', hostStartGame);
     gs.on('hostNextRound', hostNextRound);
     // player events
@@ -30,10 +30,9 @@ function hostCreateNewGame() {
 function hostPrepareGame(gameId) {
     var socket = this;
     var data = {
-        mySocketId : socket.id,
-        gameId : gameId
+        mySocketId : socket.id
     };
-    io.sockets.in(data.gameId).emit('beginNewGame', data);
+    io.sockets.emit('beginNewGame', data);
 };
 
 // Start game!

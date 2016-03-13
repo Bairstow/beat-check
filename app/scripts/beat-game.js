@@ -37,6 +37,7 @@ var IO = {
   // Player joins behaviour
   playerJoinedRoom : function(data) {
     // Update waiting screen function called for Player and Host
+    console.log('player joined room function executing (App.myRole): ', App.myRole);
     App[App.myRole].updateWaitingScreen(data);
   },
 
@@ -145,6 +146,7 @@ var App = {
     gameInit: function (data) {
       App.mySocketId = data.mySocketId;
       App.myRole = 'Host';
+      console.log('Initiated game as host, App.myRole:', App.myRole);
       App.Host.numPlayersInRoom = 0;
       App.Host.displayGameBoard();
     },
@@ -168,31 +170,19 @@ var App = {
         // If four players have joined, start the game!
         if (App.Host.numPlayers === 8) {
             // Let the server know room full.
-            IO.socket.emit('hostRoomFull',App.gameId);
+            IO.socket.emit('hostPrepGame');
         }
+    },
+
+    // host has manually started game
+    beginGameClick: function() {
+      IO.socket.emit('hostPrepGame');
     },
 
     // Countdown begins when room is full
     gameCountdown : function() {
-        // Prepare the game screen with new HTML
-        App.$gameBoard.html(App.$templateGame);
-        // Begin the on-screen countdown timer
-        var $secondsLeft = $('#countdownTimer');
-        App.countDown( $secondsLeft, 5, function(){
-            console.log('Countdown finished');
-            IO.socket.emit('countdownFinished', App.gameId);
-        });
-        // Set the Name section for each player.
-        $('#player1Score').find('.playerName').text(App.Host.players[0].playerName + ': ');
-        $('#player2Score').find('.playerName').text(App.Host.players[1].playerName + ': ');
-        $('#player3Score').find('.playerName').text(App.Host.players[2].playerName + ': ');
-        $('#player4Score').find('.playerName').text(App.Host.players[3].playerName + ': ');
-
-        // Set the Score section on screen to 0 for each player.
-        $('#player1Score').find('.score').attr('id', App.Host.players[0].mySocketId.replace(/^.#+/, ''));
-        $('#player2Score').find('.score').attr('id', App.Host.players[1].mySocketId.replace(/^.#+/, ''));
-        $('#player3Score').find('.score').attr('id', App.Host.players[2].mySocketId.replace(/^.#+/, ''));
-        $('#player4Score').find('.score').attr('id', App.Host.players[3].mySocketId.replace(/^.#+/, ''));
+      //
+      IO.socket.emit('countdownFinished');
     },
 
     // Behaviour for new round
@@ -334,14 +324,8 @@ var App = {
 
     // Showing countdown on Player screen
     gameCountdown : function() {
-        // Prepare the game screen with new HTML
-        App.$gameBoard.html(App.$templateGame);
-        // Hide Scoreboard
-        $('.scores').css('display', 'none');
-        // Begin the on-screen countdown timer
-        var $secondsLeft = $('#countdownTimer');
-        App.countDown( $secondsLeft, 5, function(){
-        });
+        $('#player-reg').css('display', 'none');
+        $('#player-board').css('display', 'block');
     },
 
     // Behaviour for new round

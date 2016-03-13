@@ -14,41 +14,20 @@
   </div>
   <div id="game-board">
     <div class="row">
-      <div class="three columns">
-        <playerdata></playerdata>
-      </div>
-      <div class="three columns">
-        <playerdata></playerdata>
-      </div>
-      <div class="three columns">
-        <playerdata></playerdata>
-      </div>
-      <div class="three columns">
-        <playerdata></playerdata>
+      <div class="one-half column text-center">Game Board</div>
+      <div class="one-half column text-center">
+        <button v-on:click="beginGame">Begin</button>
       </div>
     </div>
     <div class="row">
-      <div class="three columns">
-        <playerdata></playerdata>
-      </div>
-      <div class="three columns">
-        <playerdata></playerdata>
-      </div>
-      <div class="three columns">
-        <playerdata></playerdata>
-      </div>
-      <div class="three columns">
-        <playerdata></playerdata>
-      </div>
-    </div>
-    <div class="row">
-      <ul>
-        <li v-for="player in players">{{ player.playerName }}</li>
-      </ul>
+      <playerdata v-for="player in players" :details="player" :index="$index"></playerdata>
     </div>
   </div>
   <div id="player-reg">
     <playerreg></playerreg>
+  </div>
+  <div id="player-board">
+    <playerboard></playerboard>
   </div>
 </template>
 
@@ -59,28 +38,36 @@
 #player-reg {
   display: none;
 }
+#player-board {
+  display: none;
+}
 </style>
 
 <script>
 module.exports = {
   data: function() {
     return {
-      title: 'Beat Off In A Group...',
+      title: 'Group Beat Off',
       game: null,
       players: []
     }
   },
   components: {
     playerdata: require('./player-data.vue'),
-    playerreg: require('./player-reg.vue')
+    playerreg: require('./player-reg.vue'),
+    playerboard: require('./player-board.vue'),
   },
   methods: {
     createNewGame: function() {
+      console.log('createNewGame method called.');
       this.game.App.Host.onCreateClick();
       this.players = this.game.App.Host.players;
     },
     joinGame: function() {
       this.game.App.Player.onJoinClick();
+    },
+    beginGame: function() {
+      this.game.App.Host.beginGameClick();
     }
   },
   events: {
