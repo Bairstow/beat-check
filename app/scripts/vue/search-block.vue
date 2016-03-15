@@ -39,8 +39,6 @@ module.exports = {
     }
   },
   events: {},
-  ready: function() {
-    console.log('Vue search-block loaded.');
-  }
+  ready: function() {}
 }
 </script>

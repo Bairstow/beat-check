@@ -3,7 +3,7 @@
     <div class="player-data">
       <div class="row">
         <div class="player-name text-center">
-          {{ details.playerName }}
+          <h3>{{ details.playerName }}</h3>
         </div>
       </div>
       <div class="row">
@@ -27,9 +27,11 @@
 
 <style>
 .player-data {
-  border: 1px solid black;
   border-radius: 5%;
   margin: 2rem 0;
+  height: 16rem;
+  color: white;
+  background-color: #25161B;
 }
 </style>
 
@@ -42,8 +44,6 @@ module.exports = {
   methods: {},
   events: {},
   props: ['details', 'index'],
-  ready: function() {
-    console.log('Vue player-data loaded.');
-  }
+  ready: function() {}
 }
 </script>

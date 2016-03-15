@@ -38,8 +38,6 @@ module.exports = {
   },
   components: {},
   events: {},
-  ready: function() {
-    console.log('Vue nav bar loaded.');
-  }
+  ready: function() {}
 }
 </script>

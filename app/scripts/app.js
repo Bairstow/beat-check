@@ -2,9 +2,6 @@ var $ = require('jquery');
 
 
 $(document).ready(function() {
-  // placeholder
-  console.log('Loading main vue app.');
-  
   var Vue = require('vue');
   var MainApp = require('./vue/main-app.vue');
 
@@ -13,6 +10,4 @@ $(document).ready(function() {
   var main = new Vue({
     el: 'body'
   });
-
-  console.log(main);
 });

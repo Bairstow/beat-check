@@ -1,386 +1,117 @@
 var $ = require('jquery');
 
-console.log('beat-game.js loaded');
-
-// Namespacing the socket code under IO
-var IO = {
-
-  // Connecting client to server at pageload
-  init: function() {
-    IO.socket = io.connect();
-    IO.bindEvents();
-  },
-
-  // Socket listening for events
-  bindEvents : function() {
-    IO.socket.on('connected', IO.onConnected );
-    IO.socket.on('newGameCreated', IO.onNewGameCreated );
-    IO.socket.on('playerJoinedRoom', IO.playerJoinedRoom );
-    IO.socket.on('beginNewGame', IO.beginNewGame );
-    IO.socket.on('newRiddleData', IO.onNewRiddleData);
-    IO.socket.on('hostCheckAnswer', IO.hostCheckAnswer);
-    IO.socket.on('gameOver', IO.gameOver);
-  },
-
-  // Client connected
-  onConnected : function(data) {
-    // Cache a copy of the client's socket.IO session ID on the App
-    App.mySocketId = IO.socket.io.engine.id;
-    console.log('Connected with socket id: ', App.mySocketId);
-  },
-
-  // Call initialise game function for host
-  onNewGameCreated : function(data) {
-    App.Host.gameInit(data);
-  },
-
-  // Player joins behaviour
-  playerJoinedRoom : function(data) {
-    // Update waiting screen function called for Player and Host
-    console.log('player joined room function executing (App.myRole): ', App.myRole);
-    App[App.myRole].updateWaitingScreen(data);
-  },
-
-  // Call Countdown
-  beginNewGame : function(data) {
-    App[App.myRole].gameCountdown(data);
-  },
-
-  // Next Riddle Handler
-  onNewRiddleData : function(data) {
-    // Update the current round
-    App.currentRound = data.round;
-    // Change the word for the Host and Player
-    App[App.myRole].newRiddle(data);
-  },
-
-  // Check answer handler
-  hostCheckAnswer : function(data) {
-    if(App.myRole === 'Host') {
-        App.Host.checkAnswer(data);
-    }
-  },
-
-  // Game over handler
-  gameOver : function(data) {
-    console.log(data);
-    App[App.myRole].endGame(data);
-  },
-
-
-}
-
-
-var App = {
-  // Keeps track of Socket.io room
-  gameId: 0,
-
-  // Player or Host?
-  myRole: '',
-
-  // Object identifier unique to each player set in IO.init
-  mySocketId: '',
-
-  // Incrementing current round to match Riddle Object
-  currentRound: 0,
-
-  // Running on pageload
-  init: function () {
-    App.cacheElements();
-    App.showSplash();
-    App.bindEvents();
-
-    // Initialize the fastclick library
-    // FastClick.attach(document.body);
-  },
-
-  // Referencing templates
-  cacheElements: function () {
-    App.$doc = $(document);
-
-    App.$gameBoard = $('#gameBoard');
-    App.$templateSplash = $('#splash-template').html();
-    App.$templateCreate = $('#create-template').html();
-    App.$templateJoin = $('#join-template').html();
-    App.$templateGame = $('#game-template').html();
-    App.$templateAnswer = $('#answer-template').html();
-  },
-
-  // Show initial splash
-  showSplash: function() {
-     App.$gameBoard.html(App.$templateSplash);
-  },
-
-  // Click handlers for buttons
-  bindEvents: function () {
-    // For Host
-    App.$doc.on('click', '#createGameBtn', App.Host.onCreateClick);
-    // App.$doc.on('click', '#startGameBtn' /*Go to Game Page*/);
-
-    // For Player
-    App.$doc.on('click', '#joinGameBtn', App.Player.onJoinClick);
-    App.$doc.on('click', '#readyBtn', App.Player.onReadyClick);
-    App.$doc.on('click', '#submitAnswerBtn', App.Player.onSubmitClick);
-  },
-
-
-  // =======================
-  // Namespacing Host Code
-  // =======================
-  Host : {
-    // Referencing Player data
-    players : [],
-
-    // Keeping track of number of players
-    numPlayers: 0,
-
-    // Reference to correct answer for the round
-    currentCorrectAnswer: '',
-
-    // Handler for Create button - actions performed on riddle.js
-    onCreateClick: function () {
-      IO.socket.emit('hostCreateNewGame');
-    },
-
-    // Sets up variables, calls function to display Instruction page
-    gameInit: function (data) {
-      App.mySocketId = data.mySocketId;
-      App.myRole = 'Host';
-      console.log('Initiated game as host, App.myRole:', App.myRole);
-      App.Host.numPlayersInRoom = 0;
-      App.Host.displayGameBoard();
-    },
-
-    // show game board
-    displayGameBoard: function() {
-      $('#game-board').css('display', 'block');
-    },
-
-    // Pushing 'player joined' msg to Intruction page
-    updateWaitingScreen: function(data) {
-        // Update host screen
-        // $('#playersWaiting')
-        //     .append('<p/>')
-        //     .text('Player ' + data.playerName + ' joined the game.');
-        console.log('Player has joined: ', data.playerName);
-        // Store the new player's data on the Host.
-        App.Host.players.push(data);
-        // Increment the number of players in the room
-        App.Host.numPlayers += 1;
-        // If four players have joined, start the game!
-        if (App.Host.numPlayers === 8) {
-            // Let the server know room full.
-            IO.socket.emit('hostPrepGame');
-        }
-    },
-
-    // host has manually started game
-    beginGameClick: function() {
-      IO.socket.emit('hostPrepGame');
-    },
-
-    // Countdown begins when room is full
-    gameCountdown : function() {
-      //
-      IO.socket.emit('countdownFinished');
-    },
-
-    // Behaviour for new round
-    newRiddle : function(data) {
-        console.log('newRiddle called');
-        // Insert the new riddle data into the DOM
-        $('#countdownTimer').text('Round ' + data.round);
-        $('#gameRiddle').text(data.riddle);
-        $('#gameQuestion').text(data.question);
-        // Update the data for the current round
-        App.Host.currentCorrectAnswer = data.answer;
-        App.Host.currentRound = data.round;
-    },
-
-    // Checking answer against pool, RETURN HERE to search array of answers
-    checkAnswer : function(data) {
-      // Verify that the answer clicked is from the current round. Stops late entries.
-      if (data.round == App.currentRound){
-        // Reference for current player score
-        var $pScore = $('#' + data.playerId);
-        // Check if correct
-        if( App.Host.currentCorrectAnswer == data.answer ) {
-          // Increment the player's score
-          $pScore.text(+$pScore.text() + 1);
-          // Advance the round
-          App.currentRound += 1;
-          // Prepare data to send to the server
-          var data = {
-              gameId : App.gameId,
-              round : +App.currentRound - 1
-          }
-          console.log(data);
-          // Notify the server to start the next round.
-          IO.socket.emit('hostNextRound', data);
-          } else {
-          // Emit to server
-        }
-      }
-    },
-
-    endGame : function(data) {
-      var endGameScores = [];
-      // Get data for players from screen
-      var result = {'p1' : [$('#player1Score').find('.playerName').text(),
-        +$('#player1Score').find('.score').text()],
-      'p2' : [$('#player2Score').find('.playerName').text(),
-        +$('#player2Score').find('.score').text()],
-      'p3' : [$('#player3Score').find('.playerName').text(),
-        +$('#player3Score').find('.score').text()],
-      'p4' : [$('#player4Score').find('.playerName').text(),
-        +$('#playey4Score').find('.score').text()]};
-      // Find the winner
-      endGameScores.push(result.p1[1]);
-      endGameScores.push(result.p2[1]);
-      endGameScores.push(result.p3[1]);
-      endGameScores.push(result.p4[1]);
-      // Find position of largest values (score)
-      var indices = [];
-      var maxScore = Math.max.apply(null, endGameScores);
-      for (i=0; i<endGameScores.length; i++) {
-          if (endGameScores[i] == maxScore) {
-              indices.push(i);
-          };
-      };
-      // Find corresponding winners and push into winners array
-      var winners = [];
-      for (i=0; i<indices.length; i++) {
-          var key = 'p'+ (indices[i]+1);
-          winners.push(result[key][0]);
-      }
-      // Display the winner (or winners)
-      if(winners.length == 1) {
-        $('#countdownTimer').text('Game Over');
-        $('#gameRiddle').text('The Winner Is ...');
-        $('#gameQuestion').text(winners[0].slice(0, -2) + '!');
-      } else {
-        $('#countdownTimer').text('Game Over');
-        $('#gameRiddle').text('The Winners Are ...');
-        $('#gameQuestion').empty();
-        for (i=0; i<winners.length; i++) {
-        $('#gameQuestion').append(winners[i].slice(0, -2) + ', ');
-        };
-      };
-
-      // // Reset game data
-      // App.Host.numPlayersInRoom = 0;
-      // App.Host.isNewGame = true;
-    },
-
-
-  },
-
-  // =======================
-  // Namespacing Player Code
-  // =======================
-  Player : {
-    // Referencing Host's Socket ID
-    hostSocketId: '',
-
-    // Reference storing Player name
-    myName: '',
-
-    // Handler for clicking Join button
-    onJoinClick: function () {
-        // Display the Join Game view.
-        App.Player.displayPlayerReg();
-    },
-
-    displayPlayerReg: function() {
-      $('#player-reg').css('display', 'block');
-    },
-
-    // Handler for clicking Ready button
-    onReadyClick: function() {
-       // collect data to send to the server
-       var data = {
-           playerName : $('#playerNameInput').val() || 'anon',
-       };
-       // Send the gameId and playerName to the server
-       IO.socket.emit('playerJoinGame', data);
-       // Set the appropriate properties for the current player
-       App.myRole = 'Player';
-       App.Player.myName = data.playerName;
-       console.log(App.Player.myName)
-    },
-
-    // Pushing 'waiting for host' msg to Join view
-    updateWaitingScreen: function(data) {
-      console.log("engine id: ", IO.socket.io.engine.id);
-      console.log("mySocketId: ", data.mySocketId.replace(/^.#+/, ''));
-      if(IO.socket.io.engine.id == data.mySocketId.replace(/^.#+/, '')){
-        App.myRole = 'Player';
-        // Update host screen
-        $('#waitMsg')
-          .append('<p/>')
-          .text('Waiting for Host to start game...');
-      }
-    },
-
-    // Showing countdown on Player screen
-    gameCountdown : function() {
-        $('#player-reg').css('display', 'none');
-        $('#player-board').css('display', 'block');
-    },
-
-    // Behaviour for new round
-    newRiddle : function(data) {
-        console.log('newRiddle called');
-        // Prepare the game screen with new HTML
-        App.$gameBoard.html(App.$templateAnswer);
-        // Insert the round data into the DOM
-        $('#roundCount').text('Round ' + data.round);
-    },
-
-    // Handler for clicking Submit
-    onSubmitClick: function() {
-        var answer = $('#answerInput').val(); // The answer word
-        // Creating data obj to send to server
-        var data = {
-            gameId: App.gameId,
-            playerId: App.mySocketId,
-            answer: answer,
-            round: App.currentRound,
-        }
-        IO.socket.emit('playerAnswer',data);
-    },
-
-
-  },
-
-  // =======================
-  // Helper Code
-  // =======================
-  countDown : function( $el, startTime, callback) {
-    // Display the starting time on the screen.
-    $el.text(startTime);
-    // Start a 1 second timer
-    var timer = setInterval(countItDown,1000);
-    // Decrement the displayed timer value on each 'tick'
-    function countItDown(){
-      startTime -= 1
-      $el.text(startTime);
-
-      if( startTime <= 0 ){
-        // Stop the timer and do the callback.
-        clearInterval(timer);
-        callback();
-        return;
-      }
-    }
-  },
-
+var data = {
+  socket: io.connect(),
+  socketId: null,
+  room: null,
+  role: null,
+  gameData: null,
+  players: [],
+  instructions: ''
 };
 
-IO.init();
-App.init();
+var func = {
+  initGameBindings: function() {
+    data.socket.on('connected', listener.connected);
+    data.socket.on('logBack', listener.logBack);
+    data.socket.on('gameCreated', listener.gameCreated);
+    data.socket.on('confirmJoin', listener.confirmJoin);
+    data.socket.on('unableToJoin', listener.unableToJoin);
+    data.socket.on('gameStateUpdate', listener.gameStateUpdate);
+    data.socket.on('newRound', listener.newRound);
+  },
+  clickCreate: function() {
+    console.log('Sending request to host new game.');
+    data.socket.emit('hostNewGame', { hostId: data.socketId });
+  },
+  clickBegin: function() {
+    console.log('Sending request from host to begin game');
+    data.socket.emit('beginGame', {
+      room: data.room,
+      hostId: data.socketId
+    });
+  },
+  logSocket: function() {
+    console.log('Log socket call from client with socket ID: ', data.socketId);
+    data.socket.emit('logSocket', { clientId: data.socketId });
+  },
+  submitGuess: function(guess) {
+    console.log('Sending player guess: ', guess);
+    data.socket.emit('submitGuess', {
+      room: data.room,
+      playerId: data.socketId,
+      guess: guess
+    });
+  }
+};
+
+var listener = {
+  connected: function(eventData) {
+    // cache a copy of the client's socket.IO session ID
+    data.socketId = data.socket.io.engine.id;
+    console.log('Client connected with socket ID: ', data.socketId);
+  },
+  logBack: function(eventData) {
+    console.log(eventData);
+  },
+  gameCreated: function(eventData) {
+    console.log('New game created with room code: ', eventData.roomCode);
+    data.room = eventData.roomCode;
+    data.role = 'host';
+    data.gameData = eventData.gameData;
+  },
+  confirmJoin: function(eventData) {
+    console.log('Confirmed to join game: ', eventData.room);
+    data.room = eventData.room;
+    data.role = 'player';
+    // update message to screen to let player know that they have joined
+    $('#waitMsg').text("You're in! Waiting on game to start...");
+  },
+  unableToJoin: function(eventData) {
+    console.log('Unable to join requested game.');
+    $('#waitMsg').text(eventData);
+  },
+  gameStateUpdate: function(eventData) {
+    console.log('Game state updated');
+    if (data.role === 'host') {
+      data.gameData = eventData;
+      // update player data list
+      var newplayerData = [];
+      var currPlayers = Object.keys(data.gameData.playerData);
+      for (var i = 0; i < currPlayers.length; i++) {
+        newplayerData.push({
+          playerName: data.gameData.playerData[currPlayers[i]].playerName,
+          playerId: currPlayers[i]
+        });
+      }
+      data.players = newplayerData;
+    }
+  },
+  newRound: function(eventData) {
+    // logic for the host client
+    if (eventData.hostId === data.socketId) {
+      // #logic
+    }
+    // at the beginning of the new round display the round letter for players to guess.
+    data.instructions = 'Artist letter for round ' + eventData.roundNumber + ' is: ' + eventData.roundLetter;
+    // check if receiving client is one of the players
+    var playerFound = false;
+    var currPlayers = Object.keys(eventData.playerData);
+    for (var i = 0; i < currPlayers.length; i++) {
+      if (currPlayers[i] === data.socketId) { playerFound = true; }
+    }
+    if (playerFound) {
+      console.log('New Round');
+      // make sure that player registration is hidden from the player
+      $('#player-reg').css('display', 'none');
+      $('#playerArtistInput').val('');
+      $('#player-board').css('display', 'block');
+    }
+  }
+};
 
 module.exports = {
-  IO: IO,
-  App: App
+  data: data,
+  func: func,
+  listener: listener
 };

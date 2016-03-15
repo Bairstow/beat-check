@@ -8,7 +8,10 @@
     <input type="text" placeholder="Name" style="background-color: transparent;" v-model="name" id="playerNameInput">
   </div>
   <div class="row reg-row text-center">
-    <button v-on:click="readyClicked">Ready</button>
+    <input type="text" placeholder="Game ID" style="background-color: transparent;" v-model="gameId" id="gameIdInput">
+  </div>
+  <div class="row reg-row text-center">
+    <button v-on:click="registerPlayer">Register</button>
   </div>
   <div class="row reg-row text-center" id="waitMsg"></div>
 </template>
@@ -20,6 +23,8 @@
 </style>
 
 <script>
+var $ = require('jquery');
+
 module.exports = {
   data: function() {
     return {
@@ -30,14 +35,15 @@ module.exports = {
   },
   components: {},
   methods: {
-    readyClicked: function() {
-      this.$dispatch('player-ready', true);
+    registerPlayer: function() {
+      this.$dispatch('register-player', {
+        playerName: this.name,
+        gameId: this.gameId.toUpperCase(),
+      });
     }
   },
   events: {},
   props: [],
-  ready: function() {
-    console.log('Vue player-reg loaded.');
-  }
+  ready: function() {}
 }
 </script>

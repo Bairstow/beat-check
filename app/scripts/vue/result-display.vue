@@ -64,8 +64,6 @@ module.exports = {
     }
   },
   props: ['details'],
-  ready: function() {
-    console.log('Vue result-display loaded.');
-  }
+  ready: function() {}
 }
 </script>

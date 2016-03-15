@@ -5,19 +5,27 @@
     </div>
   </div>
   <div class="row">
-    <div class="one-half column text-center">
-      <button v-on:click="createNewGame">Start</button>
+    <div class="three columns text-center">
+      <button v-on:click="hostNewGame">Create</button>
     </div>
-    <div class="one-half column text-center">
-      <button v-on:click="joinGame">Join</button>
+    <div class="three columns text-center">
+      <button v-on:click="displayRegistration">Join</button>
+    </div>
+    <div class="three columns text-center">
+      <button v-on:click="logSocket">Log</button>
+    </div>
+    <div class="three columns text-center display-board">
+      Game ID: {{ room }}
     </div>
   </div>
-  <div id="game-board">
+  <div class="display-board">
     <div class="row">
-      <div class="one-half column text-center">Game Board</div>
-      <div class="one-half column text-center">
+      <div class="text-center">
         <button v-on:click="beginGame">Begin</button>
       </div>
+    </div>
+    <div class="row text-center">
+      <h2>{{ instructions }}</h2>
     </div>
     <div class="row">
       <playerdata v-for="player in players" :details="player" :index="$index"></playerdata>
@@ -27,12 +35,12 @@
     <playerreg></playerreg>
   </div>
   <div id="player-board">
-    <playerboard></playerboard>
+    <playerboard :details="instructions"></playerboard>
   </div>
 </template>
 
 <style>
-#game-board {
+.display-board {
   display: none;
 }
 #player-reg {
@@ -44,41 +52,72 @@
 </style>
 
 <script>
+var $ = require('jquery');
+
 module.exports = {
   data: function() {
     return {
-      title: 'Group Beat Off',
-      game: null,
-      players: []
+      title: 'Group Beat',
+      game: null
+    }
+  },
+  computed: {
+    room: function() {
+      if (this.game !== null) {
+        return this.game.data.room;
+      }
+    },
+    players: function() {
+      if (this.game !== null) {
+        return this.game.data.players;
+      }
+    },
+    instructions: function() {
+      if (this.game !== null) {
+        return this.game.data.instructions;
+      }
     }
   },
   components: {
     playerdata: require('./player-data.vue'),
     playerreg: require('./player-reg.vue'),
-    playerboard: require('./player-board.vue'),
+    playerboard: require('./player-board.vue')
   },
   methods: {
-    createNewGame: function() {
-      console.log('createNewGame method called.');
-      this.game.App.Host.onCreateClick();
-      this.players = this.game.App.Host.players;
+    hostNewGame: function() {
+      this.game.func.clickCreate();
+      $('.display-board').css('display', 'block');
     },
-    joinGame: function() {
-      this.game.App.Player.onJoinClick();
+    displayRegistration: function() {
+      $('#player-reg').css('display', 'block');
+    },
+    logSocket: function() {
+      this.game.func.logSocket();
     },
     beginGame: function() {
-      this.game.App.Host.beginGameClick();
+      this.game.func.clickBegin();
     }
   },
   events: {
-    'player-ready': function(data) {
-      this.game.App.Player.onReadyClick();
+    'register-player': function(eventData) {
+      console.log('Join request from player with name: ' + eventData.name + ' to game: ' + eventData.gameId);
+      this.game.data.socket.emit('joinGameRequest', {
+        socketId: this.game.data.socketId,
+        playerName: eventData.playerName,
+        room: eventData.gameId
+      });
+    },
+    'player-guess': function(eventData) {
+      this.game.func.submitGuess(eventData.guess);
     }
   },
   props: [],
   ready: function() {
+    console.log('Vue game-block loaded with game functions.');
     this.game = require('../beat-game');
-    console.log('Vue game-block loaded.');
+    this.game.func.initGameBindings();
+    this.room = this.game.data.room;
+    this.role = this.game.data.role;
   }
 }
 </script>

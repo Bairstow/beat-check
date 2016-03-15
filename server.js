@@ -25,12 +25,18 @@ console.log('Server running on port: ' + PORT);
 
 // create a Socket.IO server and attach it to the http server
 var io = require('socket.io').listen(server);
-
-// bring in game logic for the server
+// create instance of the game code to manage all game related data and function on the server
 var game = require('./beat-game-server');
 
 // Listen for Socket.IO Connections. Once connected, start the game logic.
 io.sockets.on('connection', function(socket) {
-    console.log('client connected');
-    game.initGame(io, socket);
+    console.log('Client ' + socket.id + ' connected.');
+    socket.emit('connected');
+    game.data.io = io;
+    game.func.initGameListeners(socket);
+    socket.on('disconnect', function() {
+      console.log('Client' + socket.id + 'disconnected');
+      // clear all hosted games associated with current socket.id (if user leaves the page instead of
+      // a manual restart for instance).
+    });
 });

@@ -39,8 +39,6 @@ module.exports = {
     }
   },
   props: ['details'],
-  ready: function() {
-    console.log('Vue result-block loaded.');
-  }
+  ready: function() {}
 }
 </script>
