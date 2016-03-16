@@ -72,14 +72,17 @@ var func = {
         }
       });
       if (allResultsCollected) {
-        // trigger end of round conditions
         console.log('All results collected for submitted guesses this round.');
         func.endGameRound(guessData.room);
       }
     });
   },
   endGameRound: function(room) {
-    
+    // calculate eliminations and update active status for players
+    var currGame = data.games[room];
+    var currPlayers = Object.keys(currGame.playerData);
+
+    // emit results back to all clients
   }
 };
 
