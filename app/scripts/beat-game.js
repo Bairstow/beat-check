@@ -1,4 +1,5 @@
 var $ = require('jquery');
+var _ = require('lodash');
 
 var data = {
   socket: io.connect(),
@@ -6,6 +7,7 @@ var data = {
   room: null,
   role: null,
   gameData: null,
+  gameStatus: null,
   players: [],
   instructions: ''
 };
@@ -73,19 +75,19 @@ var listener = {
   },
   gameStateUpdate: function(eventData) {
     console.log('Game state updated');
-    if (data.role === 'host') {
-      data.gameData = eventData;
-      // update player data list
-      var newplayerData = [];
-      var currPlayers = Object.keys(data.gameData.playerData);
-      for (var i = 0; i < currPlayers.length; i++) {
-        newplayerData.push({
-          playerName: data.gameData.playerData[currPlayers[i]].playerName,
-          playerId: currPlayers[i]
-        });
-      }
-      data.players = newplayerData;
-    }
+    // updating gameData, and gameStatus
+    data.gameData = eventData;
+    data.gameStatus = eventData.gameStatus
+    // move player data to an array that can be iterated with vue player template
+    var currPlayers = Object.keys(data.gameData.playerData);
+    data.players = [];
+    _(currPlayers).forEach(function(player) {
+      data.players.push([
+        player,
+        data.gameData.playerData[player]
+      ]);
+    });
+
   },
   newRound: function(eventData) {
     // logic for the host client

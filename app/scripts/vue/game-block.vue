@@ -28,14 +28,14 @@
       <h2>{{ instructions }}</h2>
     </div>
     <div class="row">
-      <playerdata v-for="player in players" :details="player" :index="$index"></playerdata>
+      <playerdata v-for="player in players" :details="player" :index="$index" :gamestatus="gameStatus"></playerdata>
     </div>
   </div>
   <div id="player-reg">
     <playerreg></playerreg>
   </div>
   <div id="player-board">
-    <playerboard :details="instructions"></playerboard>
+    <playerboard :details="instructions" :gamestatus="gameStatus"></playerboard>
   </div>
 </template>
 
@@ -75,6 +75,16 @@ module.exports = {
     instructions: function() {
       if (this.game !== null) {
         return this.game.data.instructions;
+      }
+    },
+    gameData: function() {
+      if (this.game !== null) {
+        return this.game.data.gameData;
+      }
+    },
+    gameStatus: function() {
+      if (this.game !== null) {
+        return this.game.data.gameStatus;
       }
     }
   },
@@ -116,8 +126,6 @@ module.exports = {
     console.log('Vue game-block loaded with game functions.');
     this.game = require('../beat-game');
     this.game.func.initGameBindings();
-    this.room = this.game.data.room;
-    this.role = this.game.data.role;
   }
 }
 </script>
