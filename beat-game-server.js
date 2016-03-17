@@ -81,7 +81,28 @@ var func = {
     // calculate eliminations and update active status for players
     var currGame = data.games[room];
     var currPlayers = Object.keys(currGame.playerData);
-
+    var activePlayers = [];
+    var allPlayers = [];
+    _(currPlayers).forEach(function(player) {
+      if (currGame.playerData[player].gameStatus === 'active') {
+        // active player found add to collection
+        activePlayers.push([player, currGame.playerData[player].roundResult]);
+      }
+      if (currGame.playerData[player].roundGuess !== null) {
+        allPlayers.push([player, currGame.playerData[player].roundResult]);
+      }
+    });
+    // find lowest total(s) among active players and set their game status to eliminated
+    var lowResult = null;
+    var eliminatedPlayers = [];
+    _(activePlayers).forEach(function(player) {
+      if (lowResult === null) {
+        lowResult = player[1].score;
+        eliminatedPlayers = player;
+      } else if (player[1].score < lowResult[1]) {
+        
+      }
+    });
     // emit results back to all clients
   }
 };
