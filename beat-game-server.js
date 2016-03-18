@@ -106,24 +106,24 @@ var func = {
     });
     // find lowest total(s) among active players and set their game status to eliminated
     var lowResult = null;
-    var eliminatedPlayers = [];
+    var lowPlayers = [];
     _(activePlayers).forEach(function(player) {
       if (lowResult === null) {
         // first player checked set the score mark
         lowResult = player[1].score;
-        eliminatedPlayers.push(player);
+        lowPlayers.push(player);
       } else if (player[1].score < lowResult) {
         // if player sets new mark by themselves
         lowResult = player[1].score;
-        eliminatedPlayers = [player];
+        lowPlayers = [player];
       } else if (player[1].score === lowResult) {
         // if player has the same result as the current mark
-        eliminatedPlayers.push(player);
+        lowPlayers.push(player);
       }
     });
     // check if game would end on eliminations this round, and if not eliminate low scorers.
-    if (activePlayers.length > eliminatedPlayers.length) {
-      _(eliminatedPlayers).forEach(function(player) {
+    if (activePlayers.length > lowPlayers.length) {
+      _(lowPlayers).forEach(function(player) {
         // set eliminated player status
         currGame.playerData[player[0]].playerStatus = 'eliminated';
       });
@@ -150,15 +150,15 @@ var func = {
     _(highPlayers).forEach(function(player) {
       console.log('Winner: ' + currGame.playerData[player[0]].playerName);
     });
-    _(eliminatedPlayers).forEach(function(player) {
-      console.log('Eliminated: ' + currGame.playerData[player[0]].playerName);
+    _(lowPlayers).forEach(function(player) {
+      console.log('Low score: ' + currGame.playerData[player[0]].playerName);
     });
     // if only one active player remains at the end of a round then declare a winner and end the game
-    // having both conditions be true should be redundant but for error checking have left in.
     console.log('activePlayers.length: ', activePlayers.length);
-    console.log('eliminatedPlayers.length: ', eliminatedPlayers.length);
+    console.log('lowPlayers.length: ', lowPlayers.length);
     console.log('highPlayers.length: ', highPlayers.length);
-    if ((activePlayers.length - eliminatedPlayers.length) === 1 && highPlayers.length === 1) {
+    // having both conditions be true should be redundant but for error checking have left in.
+    if ((activePlayers.length - lowPlayers.length) === 1 && highPlayers.length === 1) {
       currGame.winner = highPlayers[0];
       currGame.gameStatus = 'endOfGame';
       data.io.sockets.to(room).emit('gameStateUpdate', currGame);
@@ -168,7 +168,7 @@ var func = {
       }, 10000);
     } else {
       // emit results back to all clients
-      currGame.eliminatedPlayers = eliminatedPlayers;
+      currGame.lowPlayers = lowPlayers;
       currGame.highPlayers = highPlayers;
       currGame.gameStatus = 'endOfRound';
       data.io.sockets.to(room).emit('gameStateUpdate', currGame);
@@ -202,7 +202,7 @@ var listener = {
       playerData: {},
       roundNumber: 0,
       roundLetter: '',
-      eliminatedPlayers: [],
+      lowPlayers: [],
       highPlayers: [],
       gameStatus: 'waiting'
     };
