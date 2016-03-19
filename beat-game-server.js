@@ -121,13 +121,6 @@ var func = {
         lowPlayers.push(player);
       }
     });
-    // check if game would end on eliminations this round, and if not eliminate low scorers.
-    if (activePlayers.length > lowPlayers.length) {
-      _(lowPlayers).forEach(function(player) {
-        // set eliminated player status
-        currGame.playerData[player[0]].playerStatus = 'eliminated';
-      });
-    }
     // find highest score among all submitting players
     var highResult = null;
     var highPlayers = [];
@@ -145,6 +138,12 @@ var func = {
         highPlayers.push(player);
       }
     });
+    // check for multiple round end conditions
+    // - number of low players is less than the number of active players
+    //  - if only one active player left, they have won and end game
+    //  - else start new round with remaining active players
+    // - number of low players is equal to the number of active players, start new round with all active players
+
     // log results
     console.log('Round ' + currGame.roundNumber + ' results: ');
     _(highPlayers).forEach(function(player) {
