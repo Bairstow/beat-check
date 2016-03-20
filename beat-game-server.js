@@ -143,7 +143,9 @@ var func = {
     //  - if only one active player left, they have won and end game
     //  - else start new round with remaining active players
     // - number of low players is equal to the number of active players, start new round with all active players
-
+    if (activePlayers.length > lowPlayers.length) {
+      
+    }
     // log results
     console.log('Round ' + currGame.roundNumber + ' results: ');
     _(highPlayers).forEach(function(player) {
