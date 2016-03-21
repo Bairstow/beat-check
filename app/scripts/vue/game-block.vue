@@ -72,11 +72,6 @@ module.exports = {
         return this.game.data.players;
       }
     },
-    instructions: function() {
-      if (this.game !== null) {
-        return this.game.data.instructions;
-      }
-    },
     gameData: function() {
       if (this.game !== null) {
         return this.game.data.gameData;
@@ -85,6 +80,30 @@ module.exports = {
     gameStatus: function() {
       if (this.game !== null) {
         return this.game.data.gameStatus;
+      }
+    },
+    instructions: function() {
+      switch(this.gameStatus) {
+        case 'waiting':
+          return 'Currently waiting for players';
+          break;
+        case 'beginGame':
+          return 'Game is beginning';
+          break;
+        case 'newRound':
+          return 'Round ' + this.gameData.roundNumber + ' the target letter is: ' + this.gameData.roundLetter;
+          break;
+        case 'checkingGuesses':
+          return 'Checking submitted guesses...';
+          break;
+        case 'endOfRound':
+          return 'Round has ended.';
+          break;
+        case 'endOfGame':
+          return 'Game has ended. The winner was: ' + this.gameData.winner;
+          break;
+        default:
+          return 'Unexpected game status received';
       }
     }
   },
