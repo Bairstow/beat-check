@@ -15,6 +15,7 @@ var func = {
     socket.on('joinGameRequest', listener.joinGameRequest);
     socket.on('beginGame', listener.beginGame);
     socket.on('submitGuess', listener.submitGuess);
+    socket.on('leaveRoom', listener.leaveRoom);
   },
   generateRoomCode: function() {
     // generate a unique room code for the game
@@ -55,7 +56,7 @@ var func = {
     console.log('Beginning round num: ' + currGame.roundNumber + ' with target letter: ' + currGame.roundLetter);
     // generate round details broadcast new round message to all room clients
     currGame.gameStatus = 'newRound';
-    data.io.sockets.to(room).emit('newRound', currGame);
+    data.io.sockets.to(room).emit('gameStateUpdate', currGame);
   },
   checkGuess: function(guessData) {
     console.log('Checking guess: ', guessData.guess);
@@ -143,39 +144,45 @@ var func = {
     //  - if only one active player left, they have won and end game
     //  - else start new round with remaining active players
     // - number of low players is equal to the number of active players, start new round with all active players
+    currGame.lowPlayers = lowPlayers;
+    currGame.highPlayers = highPlayers;
     if (activePlayers.length > lowPlayers.length) {
-      
-    }
-    // log results
-    console.log('Round ' + currGame.roundNumber + ' results: ');
-    _(highPlayers).forEach(function(player) {
-      console.log('Winner: ' + currGame.playerData[player[0]].playerName);
-    });
-    _(lowPlayers).forEach(function(player) {
-      console.log('Low score: ' + currGame.playerData[player[0]].playerName);
-    });
-    // if only one active player remains at the end of a round then declare a winner and end the game
-    console.log('activePlayers.length: ', activePlayers.length);
-    console.log('lowPlayers.length: ', lowPlayers.length);
-    console.log('highPlayers.length: ', highPlayers.length);
-    // having both conditions be true should be redundant but for error checking have left in.
-    if ((activePlayers.length - lowPlayers.length) === 1 && highPlayers.length === 1) {
-      currGame.winner = highPlayers[0];
-      currGame.gameStatus = 'endOfGame';
-      data.io.sockets.to(room).emit('gameStateUpdate', currGame);
-      // call new round function in 5 secs
-      var newGameTimer = setTimeout(function() {
-        data.io.sockets.to(room).emit('gameEnded', currGame);
-      }, 10000);
+      // set all elements of the lowPlayer array to eliminated player status
+      _(lowPlayers).forEach(function(player) {
+        currGame.playerData[player[0]].playerStatus = 'eliminated';
+      });
+      if ((activePlayers.length - lowPlayers.length) === 1) {
+        // all but one active player has been eliminated, declare winner and start end of game routines
+        _(currPlayers).forEach(function(player) {
+          if (currGame.playerData[player].playerStatus === 'active') {
+            currGame.winner = currGame.playerData[player];
+          }
+        });
+        currGame.gameStatus = 'endOfGame';
+        data.io.sockets.to(room).emit('gameStateUpdate', currGame);
+        // call new round function in 5 secs
+        var newGameEndTimer = setTimeout(function() {
+          // broadcast gameEnded event to all clients in the room, when all clients have unsubbed
+          // from the room then delete the game data from the data.games object.
+          data.io.sockets.to(room).emit('gameEnded', currGame);
+        }, 10000);
+      } else {
+        // there is more than one active players left in the game, eliminate the low players and
+        // continue with a new round.
+        currGame.gameStatus = 'endOfRound';
+        data.io.sockets.to(room).emit('gameStateUpdate', currGame);
+        var newGameRoundTimer = setTimeout(function() {
+          func.newGameRound();
+        }, 5000);
+      }
     } else {
-      // emit results back to all clients
-      currGame.lowPlayers = lowPlayers;
-      currGame.highPlayers = highPlayers;
+      // all of the remaining active players received the same round result, eliminate none and
+      // start a new round instance
+      currGame.lowPlayers = [];
       currGame.gameStatus = 'endOfRound';
       data.io.sockets.to(room).emit('gameStateUpdate', currGame);
-      // call new round function in 5 secs
-      var newRoundTimer = setTimeout(function() {
-        func.newGameRound(room);
+      var newGameRoundTimer = setTimeout(function() {
+        func.newGameRound();
       }, 5000);
     }
   }
@@ -205,6 +212,7 @@ var listener = {
       roundLetter: '',
       lowPlayers: [],
       highPlayers: [],
+      winner: null,
       gameStatus: 'waiting'
     };
     data.games[newRoomCode] = newGame;
@@ -282,6 +290,28 @@ var listener = {
         func.checkGuess(eventData);
       }
     });
+  },
+  leaveRoom: function(eventData) {
+    // unsub the current request from the game room
+    socket.leave(eventData.room);
+    // remove player/host from the current game and if all clients have left delete the game data
+    var currGame = data.games[eventData.room];
+    var currPlayers = Object.keys(currGame.playerData);
+    // check host first
+    if (eventData.socketId === currGame.hostId) {
+      currGame.hostId = null;
+    }
+    // check players
+    _(currPlayers).forEach(function(player) {
+      if (player === eventData.socketId) {
+        delete currGame.playerData[player];
+      }
+    });
+    // check if all clients have left game
+    if (currGame.hostId === null && currGame.playerData === {}) {
+      // cleanup game instance by removing it from the games data struct.
+      delete data.games[eventData.room];
+    }
   }
 }
 

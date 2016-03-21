@@ -20,7 +20,7 @@ var func = {
     data.socket.on('confirmJoin', listener.confirmJoin);
     data.socket.on('unableToJoin', listener.unableToJoin);
     data.socket.on('gameStateUpdate', listener.gameStateUpdate);
-    data.socket.on('newRound', listener.newRound);
+    data.socket.on('gameEnded', listener.gameEnded);
   },
   clickCreate: function() {
     console.log('Sending request to host new game.');
@@ -87,29 +87,39 @@ var listener = {
         data.gameData.playerData[player]
       ]);
     });
-
+    // run conditional logic specific to certain game states.
   },
-  newRound: function(eventData) {
-    // logic for the host client
-    if (eventData.hostId === data.socketId) {
-      // #logic
-    }
-    // at the beginning of the new round display the round letter for players to guess.
-    data.instructions = 'Artist letter for round ' + eventData.roundNumber + ' is: ' + eventData.roundLetter;
-    // check if receiving client is one of the players
-    var playerFound = false;
-    var currPlayers = Object.keys(eventData.playerData);
-    for (var i = 0; i < currPlayers.length; i++) {
-      if (currPlayers[i] === data.socketId) { playerFound = true; }
-    }
-    if (playerFound) {
-      console.log('New Round');
-      // make sure that player registration is hidden from the player
-      $('#player-reg').css('display', 'none');
-      $('#playerArtistInput').val('');
-      $('#player-board').css('display', 'block');
-    }
+  gameEnded: function(eventData) {
+    // emit an unsub event to the server to be removed from the game (so can then join further games)
+    data.socket.emit('leaveRoom', {
+      room: data.room,
+      socketId: data.socketId
+    });
+    // reset the game data and game status.
+    data.gameData = null;
+    data.gameStatus = eventData.gameStatus;
   }
+  // newRound: function(eventData) {
+  //   // logic for the host client
+  //   if (eventData.hostId === data.socketId) {
+  //     // #logic
+  //   }
+  //   // at the beginning of the new round display the round letter for players to guess.
+  //   data.instructions = 'Artist letter for round ' + eventData.roundNumber + ' is: ' + eventData.roundLetter;
+  //   // check if receiving client is one of the players
+  //   var playerFound = false;
+  //   var currPlayers = Object.keys(eventData.playerData);
+  //   for (var i = 0; i < currPlayers.length; i++) {
+  //     if (currPlayers[i] === data.socketId) { playerFound = true; }
+  //   }
+  //   if (playerFound) {
+  //     console.log('New Round');
+  //     // make sure that player registration is hidden from the player
+  //     $('#player-reg').css('display', 'none');
+  //     $('#playerArtistInput').val('');
+  //     $('#player-board').css('display', 'block');
+  //   }
+  // }
 };
 
 module.exports = {
