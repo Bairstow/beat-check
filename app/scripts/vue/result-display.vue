@@ -1,21 +1,30 @@
 <template>
-  <div class="row">
-    <div class="one-third column">
-      <div class="artist-image-container">
-        <img class="artist-image" src="{{ details.image }}"></img>
+  <div class="result-container" v-if="hasResult">
+    <div class="row">
+      <div class="one-third column">
+        <div class="artist-image-container">
+          <img class="artist-image" v-bind:src="details.image"></img>
+        </div>
+      </div>
+      <div class="one-third column">
+        <div class="score-main text-center">{{ details.score }}</div>
+      </div>
+      <div class="one-third column">
+        <div class="score-minor text-center">{{ details.mbScore }} - mb</div>
+        <div class="score-minor text-center">{{ details.spotifyScore }} - spotify</div>
+        <div class="score-minor text-center">{{ details.twitterScore }} - twitter</div>
       </div>
     </div>
-    <div class="one-third column">
-      <div class="score-main text-center">{{ details.score }}</div>
-    </div>
-    <div class="one-third column">
-      <div class="score-minor text-center">{{ details.mbScore }} - mb</div>
-      <div class="score-minor text-center">{{ details.spotifyScore }} - spotify</div>
-      <div class="score-minor text-center">{{ details.twitterScore }} - twitter</div>
+    <div class="row">
+      <div class="latest-tweet text-center">{{ details.tweet }}</div>
     </div>
   </div>
-  <div class="row">
-    <div class="latest-tweet text-center">{{ details.tweet }}</div>
+  <div class="result-loading" v-else>
+    <div class="row">
+      <div class="text-center">
+        <h2>Loading...</h2>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -44,12 +53,20 @@
   font-size: 2rem;
   font-weight: 100;
 }
+.result-loading {
+  margin-top: 2rem;
+}
 </style>
 
 <script>
 module.exports = {
   data: function() {
     return {}
+  },
+  computed: {
+    hasResult: function() {
+      return typeof this.details.score === 'number';
+    }
   },
   components: {},
   methods: {

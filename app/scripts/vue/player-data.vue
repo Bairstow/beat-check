@@ -8,12 +8,12 @@
       </div>
       <div class="row">
         <div class="player-answer text-center" v-if="showResults">
-          {{ details[1].roundGuess }}
+          <h5>{{ details[1].roundGuess }}</h5>
         </div>
       </div>
       <div class="row">
         <div class="player-score text-center" v-if="showResults">
-          {{ details[1].roundResult.score }}
+          <h4>{{ details[1].roundResult.score }}</h4>
         </div>
       </div>
     </div>
@@ -24,7 +24,7 @@
 .player-data {
   border-radius: 5%;
   margin: 2rem 0;
-  height: 16rem;
+  height: 18rem;
   color: white;
   background-color: #25161B;
 }

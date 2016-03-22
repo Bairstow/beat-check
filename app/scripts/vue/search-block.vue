@@ -38,7 +38,11 @@ module.exports = {
       }
     }
   },
-  events: {},
+  events: {
+    'result-cancel': function(data) {
+      this.artist = '';
+    }
+  },
   ready: function() {}
 }
 </script>

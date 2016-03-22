@@ -103,32 +103,8 @@ var listener = {
     data.room = null;
     data.role = null;
     data.players = [];
-    data.gameStatus = eventData.gameStatus;
-    var clearGameStatusTimer = window.setTimeout(function() {
-      data.gameStatus = null;
-    }, 5000);
+    data.gameStatus = null;
   }
-  // newRound: function(eventData) {
-  //   // logic for the host client
-  //   if (eventData.hostId === data.socketId) {
-  //     // #logic
-  //   }
-  //   // at the beginning of the new round display the round letter for players to guess.
-  //   data.instructions = 'Artist letter for round ' + eventData.roundNumber + ' is: ' + eventData.roundLetter;
-  //   // check if receiving client is one of the players
-  //   var playerFound = false;
-  //   var currPlayers = Object.keys(eventData.playerData);
-  //   for (var i = 0; i < currPlayers.length; i++) {
-  //     if (currPlayers[i] === data.socketId) { playerFound = true; }
-  //   }
-  //   if (playerFound) {
-  //     console.log('New Round');
-  //     // make sure that player registration is hidden from the player
-  //     $('#player-reg').css('display', 'none');
-  //     $('#playerArtistInput').val('');
-  //     $('#player-board').css('display', 'block');
-  //   }
-  // }
 };
 
 module.exports = {

@@ -4,8 +4,8 @@ var gameChecker = require('./lib/gameChecker');
 var data = {
   io: null,
   games: {},
-  MAXPLAYERS: 8,
-  ROOMCODELENGTH: 3
+  MAXPLAYERS: 6,
+  ROOMCODELENGTH: 4
 };
 
 var func = {
@@ -300,6 +300,7 @@ var listener = {
     });
   },
   leaveRoom: function(eventData) {
+    var socket = this;
     // unsub the current request from the game room
     socket.leave(eventData.room);
     // remove player/host from the current game and if all clients have left delete the game data

@@ -10,9 +10,6 @@
   <div class="row board-row text-center">
     <button v-on:click="submitGuess">Submit</button>
   </div>
-  <div class="row board-row text-center">
-    Game Status: {{ gamestatus }}
-  </div>
 </template>
 
 <style>

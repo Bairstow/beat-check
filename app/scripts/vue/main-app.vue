@@ -94,6 +94,7 @@ module.exports = {
     },
     'result-cancel': function(data) {
       this.showHomeView();
+      this.currentResult = {};
       this.$broadcast('result-cancel', data);
     },
     'nav-home': function(data) {
