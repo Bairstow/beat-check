@@ -13,7 +13,9 @@
   <div class="row reg-row text-center">
     <button v-on:click="registerPlayer">Register</button>
   </div>
-  <div class="row reg-row text-center" id="waitMsg"></div>
+  <div class="row reg-row text-center" v-if="details">
+    You're in! Waiting on game to start...
+  </div>
 </template>
 
 <style>
@@ -43,7 +45,7 @@ module.exports = {
     }
   },
   events: {},
-  props: [],
+  props: ['details'],
   ready: function() {}
 }
 </script>

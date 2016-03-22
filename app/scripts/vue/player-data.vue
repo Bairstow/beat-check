@@ -1,6 +1,6 @@
 <template>
   <div class="one-third column">
-    <div class="player-data">
+    <div class="player-data" v-bind:class="{'eliminated': isEliminated, 'active': isActive, 'submitted': hasSubmitted, 'winner': isWinner}">
       <div class="row">
         <div class="player-name text-center">
           <h3>{{ details[1].playerName }}</h3>
@@ -16,11 +16,6 @@
           {{ details[1].roundResult.score }}
         </div>
       </div>
-      <div class="row">
-        <div class="player-status text-center">
-          Game Status: {{ gamestatus }}
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -33,6 +28,20 @@
   color: white;
   background-color: #25161B;
 }
+.active {
+  background-color: #25161B;
+}
+.eliminated {
+  color: black;
+  background-color: #A29094;
+}
+.submitted {
+  background-color: #FF926B;
+}
+.winner {
+  color: black;
+  background-color: #3AB1C8;
+}
 </style>
 
 <script>
@@ -43,6 +52,18 @@ module.exports = {
   computed: {
     showResults: function() {
       return (this.gamestatus === 'endOfRound' || this.gamestatus === 'endOfGame');
+    },
+    isEliminated: function() {
+      return (this.details[1].playerStatus === 'eliminated');
+    },
+    isActive: function() {
+      return (this.details[1].playerStatus === 'active');
+    },
+    hasSubmitted: function() {
+      return (this.details[1].roundGuess !== null && this.gamestatus === 'newRound');
+    },
+    isWinner: function() {
+      return (this.details[1].playerStatus === 'winner');
     }
   },
   components: {},

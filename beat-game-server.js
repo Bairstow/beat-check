@@ -139,6 +139,10 @@ var func = {
         highPlayers.push(player);
       }
     });
+    console.log('Checking round results:');
+    console.log('Number of active players:', activePlayers.length);
+    console.log('Number of low players:', lowPlayers.length);
+    console.log('Number of high players:', highPlayers.length);
     // check for multiple round end conditions
     // - number of low players is less than the number of active players
     //  - if only one active player left, they have won and end game
@@ -156,6 +160,8 @@ var func = {
         _(currPlayers).forEach(function(player) {
           if (currGame.playerData[player].playerStatus === 'active') {
             currGame.winner = currGame.playerData[player];
+            currGame.playerData[player].playerStatus = 'winner';
+            console.log('Winner found: ', currGame.playerData[player].playerName);
           }
         });
         currGame.gameStatus = 'endOfGame';
@@ -167,22 +173,24 @@ var func = {
           data.io.sockets.to(room).emit('gameEnded', currGame);
         }, 10000);
       } else {
+        console.log('Players eliminated.');
         // there is more than one active players left in the game, eliminate the low players and
         // continue with a new round.
         currGame.gameStatus = 'endOfRound';
         data.io.sockets.to(room).emit('gameStateUpdate', currGame);
         var newGameRoundTimer = setTimeout(function() {
-          func.newGameRound();
+          func.newGameRound(room);
         }, 5000);
       }
     } else {
+      console.log('All active players received same score. Begin new round.');
       // all of the remaining active players received the same round result, eliminate none and
       // start a new round instance
       currGame.lowPlayers = [];
       currGame.gameStatus = 'endOfRound';
       data.io.sockets.to(room).emit('gameStateUpdate', currGame);
       var newGameRoundTimer = setTimeout(function() {
-        func.newGameRound();
+        func.newGameRound(room);
       }, 5000);
     }
   }

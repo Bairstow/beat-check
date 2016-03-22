@@ -8,8 +8,7 @@ var data = {
   role: null,
   gameData: null,
   gameStatus: null,
-  players: [],
-  instructions: ''
+  players: []
 };
 
 var func = {
@@ -32,6 +31,9 @@ var func = {
       room: data.room,
       hostId: data.socketId
     });
+  },
+  clickExit: function() {
+    // logic for handling host/player exiting the game.
   },
   logSocket: function() {
     console.log('Log socket call from client with socket ID: ', data.socketId);
@@ -61,6 +63,7 @@ var listener = {
     data.room = eventData.roomCode;
     data.role = 'host';
     data.gameData = eventData.gameData;
+    data.gameStatus = eventData.gameData.gameStatus;
   },
   confirmJoin: function(eventData) {
     console.log('Confirmed to join game: ', eventData.room);
@@ -97,7 +100,13 @@ var listener = {
     });
     // reset the game data and game status.
     data.gameData = null;
+    data.room = null;
+    data.role = null;
+    data.players = [];
     data.gameStatus = eventData.gameStatus;
+    var clearGameStatusTimer = window.setTimeout(function() {
+      data.gameStatus = null;
+    }, 5000);
   }
   // newRound: function(eventData) {
   //   // logic for the host client
