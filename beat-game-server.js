@@ -62,11 +62,12 @@ var func = {
     console.log('Checking guess: ', guessData.guess);
     var currGame = data.games[guessData.room];
     var currPlayers = Object.keys(currGame.playerData);
-    gameChecker(guessData.guess, function(result) {
-      console.log('Results for guess: ' + guessData.guess + ' are:');
-      console.log(result);
-      // assign result to appropriate player data
-      currGame.playerData[guessData.playerId].roundResult = result;
+    // check if submitted guess matches the target letter for the round and immediately eliminate if not
+    if (guesssData.guess[0].toLowerCase() !== currGame.roundLetter) {
+      console.log('Guess for ' + currGame.playerData[guessData.playerId].playerName + ' did not match the target letter.');
+      currGame.playerData[guesssData.playerId].roundGuess = 'no bueno';
+      currGame.playerData[guesssData.playerId].roundResult = { score: 0 };
+      currGame.playerData[guesssData.playerId].playerStatus = 'eliminated';
       // if last active player with submitted guess returns trigger end of round function.
       var allResultsCollected = true;
       _(currPlayers).forEach(function(player) {
@@ -88,7 +89,35 @@ var func = {
         currGame.gameStatus = 'checkingGuesses';
         func.endGameRound(guessData.room);
       }
-    });
+    } else {
+      gameChecker(guessData.guess, function(result) {
+        console.log('Results for guess: ' + guessData.guess + ' are:');
+        console.log(result);
+        // assign result to appropriate player data
+        currGame.playerData[guessData.playerId].roundResult = result;
+        // if last active player with submitted guess returns trigger end of round function.
+        var allResultsCollected = true;
+        _(currPlayers).forEach(function(player) {
+          console.log('Checking if ' + currGame.playerData[player].playerName + ' has not gotten result yet.');
+          // flag waiting on returning guesses if either:
+          // a player is active and has no result or
+          // a player has previously submitted a guess and there is no result
+          if (currGame.playerData[player].playerStatus === 'active' && currGame.playerData[player].roundResult === null) {
+            console.log('Active player found without result');
+            allResultsCollected = false;
+          }
+          if (currGame.playerData[player].roundGuess !== null && currGame.playerData[player].roundResult === null) {
+            console.log('Submitted guess found without result');
+            allResultsCollected = false;
+          }
+        });
+        if (allResultsCollected) {
+          console.log('All results collected for submitted guesses this round.');
+          currGame.gameStatus = 'checkingGuesses';
+          func.endGameRound(guessData.room);
+        }
+      });
+    }
   },
   endGameRound: function(room) {
     // calculate eliminations and update active status for players
@@ -290,8 +319,6 @@ var listener = {
         allActiveGuessed = false;
       }
     });
-    // check if submitted guess matches the target letter for the round and immediately eliminate if not
-    
     _(currPlayers).forEach(function(player) {
       if (player === eventData.playerId && currGame.playerData[player].roundGuess === null && !allActiveGuessed) {
         // player hasn't yet submitted a guess for this round. append info to and call a checking function
