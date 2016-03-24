@@ -290,6 +290,8 @@ var listener = {
         allActiveGuessed = false;
       }
     });
+    // check if submitted guess matches the target letter for the round and immediately eliminate if not
+    
     _(currPlayers).forEach(function(player) {
       if (player === eventData.playerId && currGame.playerData[player].roundGuess === null && !allActiveGuessed) {
         // player hasn't yet submitted a guess for this round. append info to and call a checking function
